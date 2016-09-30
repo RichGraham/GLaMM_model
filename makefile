@@ -8,7 +8,7 @@ PRODUCT=a.out
 
 GFFLAGS=-O2
 
-GF=gfortran-fsf-5
+GF=gfortran
 
 
 all: $(PRODUCT)
