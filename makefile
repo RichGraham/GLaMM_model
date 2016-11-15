@@ -1,7 +1,7 @@
 # simple make file
 # September 2004
 SOURCES=main.f derivs.f
-PRODUCT=a.out
+PRODUCT=GLaMM_model
 
 
 

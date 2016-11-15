@@ -124,7 +124,7 @@ C       ### Rs ###
         open(unit=2,file='lam.dat',status='unknown')
         open(unit=3,file='taue.dat',status='unknown')
 
-	write(*,*) "Full theory calculation begins.... "
+	write(*,*) "GLaMM model calculation begins.... "
         write(*,*) "Step #      ","Time       ","Z_effective"
 
 C       ### Main loop begins ###
