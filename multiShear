@@ -11,5 +11,8 @@
 100         nsave
 
 #Below is the information for step changes in the shear rate
-#If you want a single shear rate set t2>finish
-1.0	    shear rate for period 2
+#If you want a single shear rate set t2 > finish
+0.2	    shear rate for period 2
+1e3	    t2: the start time for shear rate2
+0.3	    shear rate for period 3
+2e3	    t3: the start time for shear rate 3

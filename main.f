@@ -15,13 +15,14 @@
         double precision start, finish, h, t, sum, fractaue
         double precision taue, taur, taud, ds, ge, cnu, df
         double precision pi, extdot, epsilon,dssqinv,ds2inv,eps2inv
-        double precision N1, shearStress
+        double precision N1, shearStress, shear_rate2
+	double precision shear_rate3, t2, t3
         double precision lambdam,lambdam2,const
         double precision trace,term
 	double precision angle, length, Rx, Ry, a,b,c
 
 	character(2) :: ZString
-	character(9) :: rateString
+	character(9) :: rateString, dummyString
 
 
         double precision Feq,rethistory,TrF,flambdabyl
@@ -59,6 +60,13 @@ C       ### N = (2*m+1)Z ###
         read(1,*) finish
         read(1,*) fractaue
         read(1,*) nsave
+	read(1,*) dummyString
+	read(1,*) dummyString
+	read(1,*) shear_rate2
+	read(1,*) t2
+	read(1,*) shear_rate3
+	read(1,*) t3
+	
         close(unit=1)
 
 
@@ -97,7 +105,6 @@ C       ### Rs ###
         write(*,*) "Taue          =   ",taue
         write(*,*) "Taur          =   ",taur
         write(*,*) "Taud          =   ",taud
-        write(*,*) "Extensiondot  =   ",extdot
         write(*,*) "Lambda-max    =   ",lambdam
         write(*,*) "Ge            =   ",ge 
         write(*,*) "Cnu           =   ",cnu
@@ -106,7 +113,15 @@ C       ### Rs ###
         write(*,*) "Timestep      =   ",h
         write(*,*) "Final time    =   ",finish
         write(*,*) "Total steps   =   ",dnint((finish-start)/h)
-        write(*,*) "#########################################"
+	if( t2.lt.finish) then
+	   write(*,*) "#########################################"
+	   write(*,*) " "
+	   write(*,*) "Shear period 2 (rate, start time, end time) = ",
+     &	   shear_rate2, t2,t3
+	   write(*,*) "Shear period 3 (rate, start time, end time) = ",
+     &    shear_rate3, t3,finish
+	end if
+	write(*,*) "#########################################"
         write(*,*) " "
         write(*,*) "Computing stress every  ",nsave,"  steps"
         write(*,*) " "
@@ -188,9 +203,15 @@ C     & '/taue'//rateString//'.dat',status='unknown')
 C       ### Main loop begins ###
         do while (t.le.finish)
 
-C	   if(t.ge.100) then
-C	      extdot =0.0
-C	   endif
+
+	   
+	   if(t.ge.t2) then
+	      extdot =shear_rate2
+	   endif
+
+	   if(t.ge.t3) then
+	      extdot =shear_rate3
+	   endif
 
 C       ### Zeff (effective number of entanglements)  ###
 
