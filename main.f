@@ -3,24 +3,30 @@
 
         integer Z,N
         integer nstep, nsave, nprint
-        integer p,q,alpha,beta
+        integer p,q,alpha,beta,k
         integer nmax
 
         parameter(nmax=100)
 
         double precision F(0:nmax,0:nmax,3,3)
-        double precision k11(nmax,nmax),k22(nmax,nmax)
+        double precision k11(nmax,nmax),k22(nmax,nmax),k12(nmax,nmax)
         double precision lambdahistory, lambda, ax, dtrfpp
         double precision zeff, zreal, betarcr, retshift
         double precision start, finish, h, t, sum, fractaue
         double precision taue, taur, taud, ds, ge, cnu, df
         double precision pi, extdot, epsilon,dssqinv,ds2inv,eps2inv
-        double precision N1
+        double precision N1, shearStress
         double precision lambdam,lambdam2,const
         double precision trace,term
+	double precision angle, length, Rx, Ry, a,b,c
+
+	character(2) :: ZString
+	character(9) :: rateString
+
 
         double precision Feq,rethistory,TrF,flambdabyl
-        external Feq, rethistory, TrF,flambdabyl
+	integer findMini
+        external Feq, rethistory, TrF,flambdabyl, findMini
 
         common/retractionshift/RetShift
         common/segment/ds,dssqinv,ds2inv
@@ -43,6 +49,7 @@ C       ### N = (2*m+1)Z ###
         read(1,*) N
         read(1,*) cnu
         read(1,*) extdot
+	read(1,*) rateString
         read(1,*) lambdam
         read(1,*) start
         read(1,*) finish
@@ -50,10 +57,19 @@ C       ### N = (2*m+1)Z ###
         read(1,*) nsave
         close(unit=1)
 
+
+	ZString=char(Z/10+48)//Char(Z-10*(Z/10)+48)
+
+
         pi = 3.14159265359
 
 C       ### Rs ###
         retshift = 2.0
+
+
+
+
+
 
         ds=(1.0*Z)/(1.0*N)
         dssqinv = 1.0/(ds**2)
@@ -99,6 +115,7 @@ C       ### Rs ###
          do q = 1,nmax
           k11(p,q) = 0.0
           k22(p,q) = 0.0
+	  k12(p,q) = 0.0
          enddo
         enddo
 
@@ -120,16 +137,56 @@ C       ### Rs ###
          enddo
         enddo
          
-        open(unit=1,file='normalvisc.dat',status='unknown')
-        open(unit=2,file='lam.dat',status='unknown')
-        open(unit=3,file='taue.dat',status='unknown')
 
-	write(*,*) "GLaMM model calculation begins.... "
+C	open(unit=1,file='StdyFpq50/StdyRs23-e-5.dat',status='old')
+C	do p = 0,N
+C
+C	   read(1,*) k, a,b,c
+C	   F(p,p, 1,2) =a
+C	   F(p,p, 1,1) =b
+C	   F(p,p, 2,2) =c
+C	   F(p,p, 3,3) =c
+C
+C	   print*,p,a,b,c
+C        enddo
+
+C        close(unit=1)
+C	sum=0.0
+C         do p=1,N-1
+C	    sum=sum+ds*flambdabyl(p,p,F)*F(p,p,1,2)
+C         enddo
+C        
+C	 shearStress=3.0/Z*(4.0/5.0)*Ge*sum
+C	 print*,shearStress/3e-5
+C
+C	stop
+
+
+
+
+
+        open(unit=1,file='Trans'//ZString//
+     &  '/Rs2'//rateString//'.dat',status='unknown')
+C        open(unit=2,file='Trans'//ZString//
+C     &  '/lam'//rateString//'.dat',status='unknown')
+C        open(unit=3,file='Trans'//ZString//
+C     & '/taue'//rateString//'.dat',status='unknown')
+        open(unit=4,file=
+     &   'Fpq'//ZString//'/Length'//rateString//'.dat',status='unknown')
+
+
+	write(*,*) "Full theory calculation begins.... "
         write(*,*) "Step #      ","Time       ","Z_effective"
 
-C       ### Main loop begins ###
 
+
+
+C       ### Main loop begins ###
         do while (t.le.finish)
+
+C	   if(t.ge.100) then
+C	      extdot =0.0
+C	   endif
 
 C       ### Zeff (effective number of entanglements)  ###
 
@@ -167,6 +224,9 @@ C       ### compute all components ###
           k11(p,q) = df
           call derivs(p,q,F,2,2,lambda,cnu,df)
           k22(p,q) = df
+          call derivs(p,q,F,1,2,lambda,cnu,df)
+          k12(p,q) = df
+	  !write(*,*) dF, k12(p,q)
          enddo
         enddo		
 
@@ -176,6 +236,7 @@ C       ### Euler advancement in time ###
          do q=1,N-1
           f(p,q,1,1) = f(p,q,1,1) + h*k11(p,q)
           f(p,q,2,2) = f(p,q,2,2) + h*k22(p,q)
+	  f(p,q,1,2) = f(p,q,1,2) + h*k12(p,q)
          enddo
         enddo
 
@@ -193,21 +254,55 @@ C       ### N1 ###
          enddo
          N1=3.0/Z*(4.0/5.0)*Ge*sum
 
-         write(1,*) t,n1/extdot
-
-         do p=0,N
-          trace = Trf(p,p,F)
-          write(2,*)t,p,dsqrt(trace),flambdabyl(p,p,F)
-          term= const*(lambdam2*lambdam2 + trace*trace/3.0)
-          term = term/(lambdam2 - trace)**2
-          write(3,*) t,p,taue/term
+	 sum=0.0
+         do p=1,N-1
+	    sum=sum+ds*flambdabyl(p,p,F)*F(p,p,1,2)
          enddo
+         shearStress=3.0/Z*(4.0/5.0)*Ge*sum
+
+         trace = Trf(25,25,F)
+C         write(1,*) t,Zeff,shearStress/extdot, n1
+ 20	     format(i4,3f12.8)
+ 55	     format(4e20.12)
+         write(1,55) t,shearStress/extdot,Zeff,n1
+
+
+
+
+
+	 p=5
+	 print*,p,F(p,p,1,2), F(p,p,1,1), 
+     &   F(p,p,2,2), F(p,p,1,1)+2.0*F(p,p,2,2)
+
+
+
+C         do p=0,N
+C          trace = Trf(p,p,F)
+C          write(2,*)t,p,dsqrt(trace),flambdabyl(p,p,F)
+C          term= const*(lambdam2*lambdam2 + trace*trace/3.0)
+C          term = term/(lambdam2 - trace)**2
+C          write(3,*) t,p,taue/term
+C         enddo
+
+C       ###save "steady" data#####
+C	  open(unit=7,file='StdyFpq'//ZString//'/StdyRs2'
+C     &   //rateString//'.dat',status='unknown')
+
+C	   do p=0,N
+C	      write(7,20) (p+1),
+C     &	      F(p,p,1,2), F(p,p,1,1), 
+C     &   F(p,p,2,2)
+C	   enddo
+C	  close(unit=7)
+
 
         endif
  
 C       ### Display on screen ###
         if (mod(nstep,nprint).eq.0) then
-         write(*,*) nstep,"   ",t,"   ",zeff
+C        if (mod(nstep,1).eq.0) then
+         write(*,*) nstep,"   ",t,"   ",zeff,"   ",
+     &       dsqrt(Trf(25,25,f)),"   ",shearStress,flambdabyl(25,25,F)
         endif
 
         enddo
@@ -215,7 +310,8 @@ C       ### Display on screen ###
 C       ###  Loop ends ###
 
         close(unit=1)
-        close(unit=2)
+C        close(unit=2)
+	close(unit=4)
 
         stop
         end
@@ -242,7 +338,8 @@ C       ###  Loop ends ###
         double precision trmsr,trmp1sr,trmm1sr,dclfpq
         
         double precision TrF,Dclf,flambda
-        external TrF,Dclf,flambda
+	integer findMini
+        external TrF,Dclf,flambda, findMini
 
         common/retractionshift/RetShift
         common/segment/ds,dssqinv,ds2inv
@@ -318,7 +415,7 @@ C       ###  f*(1/lambda_p)*(d2/dp^2)flambda term  ###
 C     =======Reptation + CLF term======================
  
 C       find point closest to chain end
-        mini=Min(p,q,N-p,N-q)
+        mini=findMini(p,q)
 
         pp=ds*p+epsilon
         pm=ds*p-epsilon 

@@ -27,7 +27,8 @@
         double precision trmsr,trmp1sr,trmm1sr,dclfpq
 
         double precision TrF,Feq,Dclf,flambda,flambdabyl
-        external TrF,Feq,Dclf,flambda,flambdabyl
+	integer findMini
+        external TrF,Feq,Dclf,flambda,flambdabyl, findMini
 
         common/retractionshift/RetShift
         common/segment/ds,dssqinv,ds2inv
@@ -125,7 +126,6 @@ C       ###  f*(1/lambda_p)*(d2/dp^2)flambda term  ###
         sumret=sumret/(Pi**2*taue)*RetShift
       
 
-
 C     =======Convection term for extension======================
 
 C       ###  Fxx  ###
@@ -138,11 +138,11 @@ C       ###  Fxx  ###
 
 C       ###  Fyy  ###
 
-  !      if (alpha.EQ.2) then
-  !       if (beta.EQ.2) then
-  !        sumcon=sumcon-extdot*F(p,q,2,2)
-  !       endif
-  !      endif 
+        !if (alpha.EQ.2) then
+        ! if (beta.EQ.2) then
+        !  sumcon=sumcon-extdot*F(p,q,2,2)
+        ! endif
+        !endif 
         
 	 !==shear==
       !Fxx
@@ -160,8 +160,6 @@ C       ###  Fyy  ###
          endif
       endif
 
-
-        
 
 C     =======CCr term======================
  
@@ -265,7 +263,7 @@ C       ###   d/ds(1/sqrt(TrFpp)*d/ds(Feq)   ###
 C     =======Reptation + CLF term======================
  
 C       find point closest to chain end
-        mini=Min(p,q,N-p,N-q)
+        mini=findMini(p,q)
 
         pp=ds*p+epsilon
         pm=ds*p-epsilon 
@@ -373,6 +371,10 @@ C       ###  Dclf*(1/sqrt(Trfmin))*(d/dq+d/dq)**2F  ###
 
         double precision F(0:nmax,0:nmax,3,3)
  
+
+
+
+
         trace = TrF(p,q,F)
         term=(lambdam2-trace/3.0)/(lambdam2-trace)
         flambdabyl=term*const
@@ -423,3 +425,78 @@ C       ###  Dclf*(1/sqrt(Trfmin))*(d/dq+d/dq)**2F  ###
         endif
 
         end function
+
+
+	Integer function findMini(p,q)
+
+	implicit none
+	integer :: p,q, answ,N
+
+	common/points/N
+	
+	
+	
+	
+	
+	if(p==q) then
+	   answ=p
+	endif
+	
+	if( (1.0*p< 1.0*N/2.0) .AND. (1.0*q<1.0*N/2.0)) then
+	   answ = min( p,q)
+	endif
+      
+	
+	
+	
+	if( (1.0*p > 1.0*N/2.0) .AND. (1.0*q > 1.0*N/2.0)) then
+	   answ = max(p,q)
+	endif
+	
+	
+	
+	if( (1.0*p < 1.0*N/2.0) .AND. (1.0*q > 1.0*N/2.0)) then
+	   
+	   if( p< N-q) then
+	      answ = p
+	   else
+	      answ = q
+	   endif
+	   
+	endif
+	
+	
+	if( (1.0*p > 1.0*N/2.0) .AND. (1.0*q < 1.0*N/2.0)) then
+	   
+	   if( q< N-p) then
+	      answ = q
+	   else
+	      answ = p
+	   endif
+	   
+	endif
+	
+	
+	
+	
+	if(p==q) then
+	   answ=p
+	endif
+	
+	
+	if(p==N/2) then
+	   answ = q
+	endif
+	
+	if(q==N/2) then
+	   answ = p
+	endif
+	
+	!print*,"mini",p,q,N, N/2, answ
+	
+	findMini = answ
+	
+	
+	end function findMini
+	
+	
