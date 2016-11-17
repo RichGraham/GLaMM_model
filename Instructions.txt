@@ -1,0 +1,4 @@
+====Running====
+From the folder where you want the results to go, run
+> GLaMM_model
+The GLaMM_model executable will be cop

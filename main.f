@@ -166,13 +166,13 @@ C	stop
 
 
         open(unit=1,file='Trans'//ZString//
-     &  '/Rs2'//rateString//'.dat',status='unknown')
+     &  'Rs2'//rateString//'.dat',status='unknown')
 C        open(unit=2,file='Trans'//ZString//
 C     &  '/lam'//rateString//'.dat',status='unknown')
 C        open(unit=3,file='Trans'//ZString//
 C     & '/taue'//rateString//'.dat',status='unknown')
         open(unit=4,file=
-     &   'Fpq'//ZString//'/Length'//rateString//'.dat',status='unknown')
+     &   'Fpq'//ZString//'Length'//rateString//'.dat',status='unknown')
 
 
 	write(*,*) "Full theory calculation begins.... "

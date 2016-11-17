@@ -8,7 +8,6 @@ PRODUCT=GLaMM_model
 
 GFFLAGS=-O2
 
-GF=gfortran
 
 
 all: $(PRODUCT)
