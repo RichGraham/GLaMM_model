@@ -42,14 +42,18 @@
 C       ### N has to be an odd multiple of Z ###
 C       ### N = (2*m+1)Z ###
 
-        open(unit=1,file='input',status='old')
+	character(20) ::  base_string
+
+	call getarg(1, base_string)
+
+	
+        open(unit=1,file=base_string,status='old')
         read(1,*) taue
         read(1,*) ge
         read(1,*) Z
         read(1,*) N
         read(1,*) cnu
         read(1,*) extdot
-	read(1,*) rateString
         read(1,*) lambdam
         read(1,*) start
         read(1,*) finish
@@ -166,16 +170,16 @@ C	stop
 
 
         open(unit=1,file='Trans'//ZString//
-     &  'Rs2'//rateString//'.dat',status='unknown')
+     &  trim(base_string)//'.dat',status='unknown')
 C        open(unit=2,file='Trans'//ZString//
 C     &  '/lam'//rateString//'.dat',status='unknown')
 C        open(unit=3,file='Trans'//ZString//
 C     & '/taue'//rateString//'.dat',status='unknown')
         open(unit=4,file=
-     &   'Fpq'//ZString//'Length'//rateString//'.dat',status='unknown')
+     &   'Fpq'//ZString//trim(base_string)//'.dat',status='unknown')
 
 
-	write(*,*) "Full theory calculation begins.... "
+	write(*,*) "GLaMM model calculation begins.... "
         write(*,*) "Step #      ","Time       ","Z_effective"
 
 
@@ -263,8 +267,8 @@ C       ### N1 ###
          trace = Trf(25,25,F)
 C         write(1,*) t,Zeff,shearStress/extdot, n1
  20	     format(i4,3f12.8)
- 55	     format(4e20.12)
-         write(1,55) t,shearStress/extdot,Zeff,n1
+ 55	     format(5e20.12)
+         write(1,55) t,shearStress, shearStress/extdot,Zeff,n1
 
 
 
