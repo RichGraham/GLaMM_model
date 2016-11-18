@@ -20,6 +20,8 @@
         double precision lambdam,lambdam2,const
         double precision trace,term
 	double precision angle, length, Rx, Ry, a,b,c
+	double precision sig_yy0, sig_yy1, sig_xy0, sig_xy1 !stress component at the end of previous shear perid
+	double precision sig_yy, sig_xx
 
 	character(2) :: ZString
 	character(9) :: rateString, dummyString
@@ -62,10 +64,10 @@ C       ### N = (2*m+1)Z ###
         read(1,*) nsave
 	read(1,*) dummyString
 	read(1,*) dummyString
-	read(1,*) shear_rate2
 	read(1,*) t2
-	read(1,*) shear_rate3
+	read(1,*) shear_rate2
 	read(1,*) t3
+	read(1,*) shear_rate3
 	
         close(unit=1)
 
@@ -113,11 +115,16 @@ C       ### Rs ###
         write(*,*) "Timestep      =   ",h
         write(*,*) "Final time    =   ",finish
         write(*,*) "Total steps   =   ",dnint((finish-start)/h)
+	
+	write(*,*) "#########################################"
+	write(*,*) " "
+	write(*,*) "Shear period 1 (rate, start time, end time) = ",
+     &	   extdot, start,t2
 	if( t2.lt.finish) then
-	   write(*,*) "#########################################"
-	   write(*,*) " "
 	   write(*,*) "Shear period 2 (rate, start time, end time) = ",
      &	   shear_rate2, t2,t3
+	end if
+	if( t3.lt.finish) then
 	   write(*,*) "Shear period 3 (rate, start time, end time) = ",
      &    shear_rate3, t3,finish
 	end if
@@ -193,7 +200,18 @@ C     & '/taue'//rateString//'.dat',status='unknown')
         open(unit=4,file=
      &   'Fpq'//ZString//trim(base_string)//'.dat',status='unknown')
 
+	if( t2.lt.finish) then
+	   open(unit=5,file='2nd'//ZString//
+     &  trim(base_string)//'.dat',status='unknown')
+	end if
 
+	if( t3.lt.finish) then
+	   open(unit=7,file='3rd'//ZString//
+     &  trim(base_string)//'.dat',status='unknown')
+	end if
+	
+	
+	   
 	write(*,*) "GLaMM model calculation begins.... "
         write(*,*) "Step #      ","Time       ","Z_effective"
 
@@ -204,7 +222,6 @@ C       ### Main loop begins ###
         do while (t.le.finish)
 
 
-	   
 	   if(t.ge.t2) then
 	      extdot =shear_rate2
 	   endif
@@ -269,56 +286,58 @@ C       ### Euler advancement in time ###
         nstep=nstep+1
 
 C       ### compute stress every few time steps ###
-
         if (mod(nstep,nsave).eq.0) then
 
-C       ### N1 ###
-         sum=0.0
-         do p=1,N-1
-          sum=sum+ds*flambdabyl(p,p,F)*(F(p,p,1,1)-F(p,p,2,2))
-         enddo
-         N1=3.0/Z*(4.0/5.0)*Ge*sum
-
+C       ### Shear stress ###
 	 sum=0.0
          do p=1,N-1
 	    sum=sum+ds*flambdabyl(p,p,F)*F(p,p,1,2)
          enddo
          shearStress=3.0/Z*(4.0/5.0)*Ge*sum
+   
+C       ### Sig yy ###
+	 sum=0.0
+         do p=1,N-1
+	    sum=sum+ds*flambdabyl(p,p,F)*F(p,p,2,2)
+         enddo
+         sig_yy=3.0/Z*(4.0/5.0)*Ge*sum
 
-         trace = Trf(25,25,F)
-C         write(1,*) t,Zeff,shearStress/extdot, n1
+C       ### Sig xx ###
+	 sum=0.0
+         do p=1,N-1
+	    sum=sum+ds*flambdabyl(p,p,F)*F(p,p,1,1)
+         enddo
+         sig_xx=3.0/Z*(4.0/5.0)*Ge*sum
+	 
+	 n1=sig_xx-sig_yy
+
+
+
  20	     format(i4,3f12.8)
  55	     format(5e20.12)
          write(1,55) t,shearStress, shearStress/extdot,Zeff,n1
 
+	 if( t<t2 ) then
+	    sig_xy0 = shearStress
+	    sig_yy0 = sig_yy
+	 end if
+	 
+	 
+	 if( t>t2 .and. t<t3) then
+	    write(5,55), t-t2, shearStress, (t-t2)*extdot,
+     &	    shearStress/extdot, sig_xy0+sig_yy0*extdot*(t-t2)
 
+	    sig_xy1 = shearStress
+	    sig_yy1 = sig_yy
+	    !! save 
+	 end if
+	
 
+	if( t.gt.t3) then
+	    write(7,55), t-t3, shearStress, (t-t3)*extdot,
+     &	    shearStress/extdot, n1
+	end if
 
-
-	 p=5
-	 print*,p,F(p,p,1,2), F(p,p,1,1), 
-     &   F(p,p,2,2), F(p,p,1,1)+2.0*F(p,p,2,2)
-
-
-
-C         do p=0,N
-C          trace = Trf(p,p,F)
-C          write(2,*)t,p,dsqrt(trace),flambdabyl(p,p,F)
-C          term= const*(lambdam2*lambdam2 + trace*trace/3.0)
-C          term = term/(lambdam2 - trace)**2
-C          write(3,*) t,p,taue/term
-C         enddo
-
-C       ###save "steady" data#####
-C	  open(unit=7,file='StdyFpq'//ZString//'/StdyRs2'
-C     &   //rateString//'.dat',status='unknown')
-
-C	   do p=0,N
-C	      write(7,20) (p+1),
-C     &	      F(p,p,1,2), F(p,p,1,1), 
-C     &   F(p,p,2,2)
-C	   enddo
-C	  close(unit=7)
 
 
         endif
@@ -326,7 +345,7 @@ C	  close(unit=7)
 C       ### Display on screen ###
         if (mod(nstep,nprint).eq.0) then
 C        if (mod(nstep,1).eq.0) then
-         write(*,*) nstep,"   ",t,"   ",zeff,"   ",
+         write(*,*) nstep,"  ",t,"   ",zeff,"   ",
      &       dsqrt(Trf(25,25,f)),"   ",shearStress,flambdabyl(25,25,F)
         endif
 
