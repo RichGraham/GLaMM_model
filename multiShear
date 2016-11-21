@@ -1,18 +1,18 @@
 1.0          Taue
 1.0          Ge
-50           Z
-50           N_oddmultipleofZ
+25           Z
+125           N_oddmultipleofZ
 0.1          Cnu
 0.01        shear rate
 500000000.0        lambda-max
 0.0          start
-220       finish
+250       finish
 0.01	     frac-taue
 10         nsave
 
 #Below is the information for step changes in the shear rate
 #If you want a single shear rate set t2 > finish
 200	    t2: the start time for shear rate2
--0.2	    shear rate for period 2
-4e10	    t3: the start time for shear rate 3
-0.3	    shear rate for period 3
+0.00000001	    shear rate for period 2
+205	    t3: the start time for shear rate 3
+-0.05	    shear rate for period 3

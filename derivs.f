@@ -5,7 +5,7 @@
         integer N
         integer nmax
 
-        parameter(nmax=100)
+        parameter(nmax=500)
 
         double precision F(0:nmax,0:nmax,3,3)
         double precision cnu,df,retshift,ds,nu,lambda
@@ -316,7 +316,7 @@ C       ###  Dclf*(1/sqrt(Trfmin))*(d/dq+d/dq)**2F  ###
         integer p,q
         integer nmax
 
-        parameter(nmax=100)
+        parameter(nmax=500)
 
         double precision  F(0:nmax,0:nmax,3,3)
 
@@ -338,7 +338,7 @@ C       ###  Dclf*(1/sqrt(Trfmin))*(d/dq+d/dq)**2F  ###
         common/lambdamaxsq/lambdam2
         common/constant/const
         
-        parameter(nmax=100)
+        parameter(nmax=500)
 
         double precision F(0:nmax,0:nmax,3,3)
  
@@ -367,7 +367,7 @@ C       ###  Dclf*(1/sqrt(Trfmin))*(d/dq+d/dq)**2F  ###
         common/lambdamaxsq/lambdam2
         common/constant/const
         
-        parameter(nmax=100)
+        parameter(nmax=500)
 
         double precision F(0:nmax,0:nmax,3,3)
  

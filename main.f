@@ -6,7 +6,7 @@
         integer p,q,alpha,beta,k
         integer nmax
 
-        parameter(nmax=100)
+        parameter(nmax=500)
 
         double precision F(0:nmax,0:nmax,3,3)
         double precision k11(nmax,nmax),k22(nmax,nmax),k12(nmax,nmax)
@@ -320,22 +320,25 @@ C       ### Sig xx ###
 	 if( t<t2 ) then
 	    sig_xy0 = shearStress
 	    sig_yy0 = sig_yy
+	    sig_xy1 = shearStress
+	    sig_yy1 = sig_yy
 	 end if
 	 
 	 
 	 if( t>t2 .and. t<t3) then
 	    write(5,55), t-t2, shearStress, (t-t2)*extdot,
-     &	    shearStress/extdot, sig_xy0+sig_yy0*extdot*(t-t2)
+     &	    n1, sig_xy0+sig_yy0*extdot*(t-t2)
 
 	    sig_xy1 = shearStress
 	    sig_yy1 = sig_yy
-	    !! save 
+
 	 end if
 	
 
 	if( t.gt.t3) then
-	    write(7,55), t-t3, shearStress, (t-t3)*extdot,
-     &	    shearStress/extdot, n1
+	    write(7,55), t-t3, shearStress,sig_yy1, 
+     &	(shearStress - sig_xy1)/extdot/(t-t3),
+     &	    sig_xy1+sig_yy1*extdot*(t-t3)
 	end if
 
 
@@ -367,7 +370,7 @@ C        close(unit=2)
         Integer p,q,i,j,alpha,beta,N,mini 
         integer nmax
 
-        parameter(nmax=100)
+        parameter(nmax=500)
 
         Double Precision F(0:nmax,0:nmax,3,3)
         double precision sumret,sumrep,zeff, ds,dssqinv,ds2inv
