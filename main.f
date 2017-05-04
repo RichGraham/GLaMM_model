@@ -221,7 +221,17 @@ C     & '/taue'//rateString//'.dat',status='unknown')
 C       ### Main loop begins ###
         do while (t.le.finish)
 
+C       ### If timestep crosses into new shear region then cut it short
+	   h = fractaue*taue
+	   if( t<t2 .AND. t+h>t2) then
+	      h= t2-t
+	   endif
 
+	   if( t<t3 .AND. t+h>t3) then
+	      h= t3-t
+	   endif
+	   
+C       ###Choose the shear rate based on the time period
 	   if(t.ge.t2) then
 	      extdot =shear_rate2
 	   endif
