@@ -314,8 +314,8 @@ C       ### Sig xx ###
 
 
  20	     format(i4,3f12.8)
- 55	     format(5e20.12)
-         write(1,55) t,shearStress, shearStress/extdot,Zeff,n1
+ 55	     format(6e20.12)
+         write(1,55) t,shearStress, shearStress/extdot,Zeff,n1, sig_yy
 
 	 if( t<t2 ) then
 	    sig_xy0 = shearStress
