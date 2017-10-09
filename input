@@ -4,7 +4,7 @@
 25           N_oddmultipleofZ
 0.1          Cnu
 0.013        shear rate
-5.0        lambda-max
+10000.0        lambda-max
 0.0          start
 5e3       finish
 0.1	     frac-taue
