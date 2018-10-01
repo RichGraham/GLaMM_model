@@ -200,6 +200,8 @@ C     & '/taue'//rateString//'.dat',status='unknown')
         open(unit=4,file=
      &   'Fpq'//ZString//trim(base_string)//'.dat',status='unknown')
 
+	write(1,*) '# time, shear stress, viscosity, Zeff, n1, sigma_yy'
+	
 	if( t2.lt.finish) then
 	   open(unit=5,file='2nd'//ZString//
      &  trim(base_string)//'.dat',status='unknown')
