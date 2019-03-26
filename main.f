@@ -94,7 +94,7 @@ C       ### Rs ###
 
         taur = z**2*taue
         taud = 3*z*taur
-        h = fractaue*taue
+        h = fractaue*taue * (1.0*Z / (1.0*N) )**2
         nprint = nsave*10
         epsilon = 0.001
         eps2inv = 0.5/epsilon
@@ -224,7 +224,7 @@ C       ### Main loop begins ###
         do while (t.le.finish)
 
 C       ### If timestep crosses into new shear region then cut it short
-	   h = fractaue*taue
+	   h = fractaue*taue  * (1.0*Z / (1.0*N) )**2
 	   if( t<t2 .AND. t+h>t2) then
 	      h= t2-t
 	   endif
